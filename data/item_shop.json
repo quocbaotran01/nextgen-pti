@@ -1,0 +1,37 @@
+[
+    {
+        "id": 1,
+        "name": "Con rùa vàng",
+        "price": 300000000,
+        "image": "images/item1.png",
+        "label": "Mẫu quý hiếm"
+    },
+    {
+        "id": 2,
+        "name": "Bánh nhân đôi vị",
+        "label": "Đôi bánh tình nhân",
+        "image": "images/item2.png",
+        "price": 200000
+    },
+    {
+        "id": 3,
+        "name": "Lon Thịt tươi sống",
+        "label": "Thịt ngon, quá đã",
+        "image": "images/item3.png",
+        "price": 150000
+    },
+    {
+        "id": 4,
+        "name": "Nước hoa Trang Điểm",
+        "label": "Trang điểm thơm tho",
+        "image": "images/item1.png",
+        "price": 150000
+    },
+    {
+        "id": 5,
+        "name": "Giày Thể Thao",
+        "label": "Đi qua có miền",
+        "image": "images/item2.png",
+        "price": 280000
+    }
+]
