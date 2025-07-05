@@ -198,6 +198,28 @@ font: 20pt &quot;Bahnschrift&quot;;</string>
     <widget class="QLabel" name="label_5">
      <property name="geometry">
       <rect>
+       <x>14</x>
+       <y>15</y>
+       <width>431</width>
+       <height>531</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="pixmap">
+      <pixmap>../pngtree-online-shopping-with-cart-and-creative-shopping-icons-png-image_5345680.jpg</pixmap>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
+     <property name="wordWrap">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_6">
+     <property name="geometry">
+      <rect>
        <x>10</x>
        <y>10</y>
        <width>431</width>
@@ -208,7 +230,7 @@ font: 20pt &quot;Bahnschrift&quot;;</string>
       <string/>
      </property>
      <property name="pixmap">
-      <pixmap>../../PT04-APP/img/3766277.jpg</pixmap>
+      <pixmap>../images/pngtree-online-shopping-with-cart-and-creative-shopping-icons-png-image_5345680.jpg</pixmap>
      </property>
      <property name="scaledContents">
       <bool>true</bool>
