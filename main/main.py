@@ -305,6 +305,86 @@ class ShopCart(QtWidgets.QMainWindow):
 
         item_widget.setLayout(layout)
         return item_widget
+    
+    def on_item_clicked(self, item):
+        widget = self.listWidget.itemWidget(item)
+        if widget:
+            name_label = widget.findChild(QtWidgets.QLabel, "name_label")  # hoặc tên cụ thể bạn đặt
+            if name_label:
+                product_name = name_label.text()
+                self.lineEdit_name.setText(product_name)
+    
+    def delete_selected(self):
+        name = self.lineEdit_name.text().strip()
+        quantity = self.spinBox_quantity.value()
+    
+        if not name:
+            QMessageBox.warning(self, "Lỗi", "Chưa nhập têen sản phẩm")
+            return
+    
+        if quantity <= 0:
+            QMessageBox.warning(self, "Lỗi", "Số lượng không hợp lệ!")
+            return
+        try:
+            with open(self.data_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            data = []
+    
+        found = False
+        for i, item in enumerate(data):
+            if item.get("name") == name:
+                item["number_of_item"] -= quantity
+    
+                if item["number_of_item"] <= 0:
+                    del data[i]  # Xoá hoàn toàn sản phẩm nếu còn 0
+                found = True
+                break
+            
+        if not found:
+            QMessageBox.information(self, "Không tìm thấy", "Không tìm thấy sản phẩm trong giỏ hàng.")
+            return
+    
+        with open(self.data_file, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+    
+        QMessageBox.information(self, "Thành công", "Đã cập nhật giỏ hàng.")
+        self.load_item_json()
+
+
+    def handle_add_item(self):
+        name = self.lineEdit_name.text().strip()
+        quantity = self.spinBox_quantity.value()
+
+        if not name:
+            QMessageBox.warning(self, "Lỗi", "Chưa nhập tên sản phẩm.")
+            return
+
+        if quantity <= 0:
+            QMessageBox.warning(self, "Lỗi", "Số lượng không hợp lệ!")
+            return
+
+        try:
+            with open(self.data_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            data = []
+
+        found = False
+        for item in data:
+            if item.get("name") == name:
+                item["number_of_item"] += quantity
+                found = True
+                break
+
+        if found == False:
+            QMessageBox.information(self, "Không tìm thấy", "Không tìm thấy sản phẩm.")
+        with open(self.data_file, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+
+        QMessageBox.information(self, "Thành công", "Đã cập nhật giỏ hàng.")
+        self.load_item_json()  # Refresh lại danh sách
+
     def back_page2(self):
         self.testPage = Test(global_name)
         testPage.show()
