@@ -33,5 +33,12 @@
         "label": "Đi qua có miền",
         "image": "images/item2.png",
         "price": 280000
+    },
+    {
+        "id": 6,
+        "name": "Iphone 30 pro max",
+        "label": "Điện thoại Iphone cực xịn",
+        "image": "images/item3.png",
+        "price": 3000000
     }
 ]

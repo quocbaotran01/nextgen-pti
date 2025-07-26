@@ -1,3 +1,26 @@
 [
-    
+    {
+        "id": 6,
+        "name": "Iphone 30 pro max",
+        "label": "Điện thoại Iphone cực xịn",
+        "image": "images/item3.png",
+        "price": 3000000,
+        "number_of_item": 9
+    },
+    {
+        "id": 5,
+        "name": "Giày Thể Thao",
+        "label": "Đi qua có miền",
+        "image": "images/item2.png",
+        "price": 280000,
+        "number_of_item": 8
+    },
+    {
+        "id": 1,
+        "name": "Con rùa vàng",
+        "price": 300000000,
+        "image": "images/item1.png",
+        "label": "Mẫu quý hiếm",
+        "number_of_item": 3
+    }
 ]

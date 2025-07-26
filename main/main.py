@@ -1,5 +1,5 @@
-from PyQt6 import QtWidgets, QtGui, QtCore
 from PyQt6.QtWidgets import QMessageBox, QWidget, QListWidget, QListWidgetItem, QLabel, QVBoxLayout
+from PyQt6 import QtWidgets, QtGui, QtCore
 from PyQt6.QtGui import QPixmap
 from PyQt6 import uic
 from PyQt6.QtCore import QSize, Qt
@@ -96,12 +96,12 @@ class Test(QtWidgets.QMainWindow):
         self.search_item_lineEdit.textChanged.connect(self.search_item)
         self.pushButton_exit.clicked.connect(self.go_back_to_login)
         self.pushButton_cart.clicked.connect(self.shop_cart)
+        self.pushButton_setting_item.clicked.connect(self.setting_item)
         
         self.name_label.setText(name)
 
         self.load_item_json()
         self.listWidget.itemClicked.connect(self.handle_item_click)
-
 
     def load_item_json(self, keyword=""):
         try:
@@ -109,7 +109,6 @@ class Test(QtWidgets.QMainWindow):
                 products = json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
             products = []
-
 
         # Lọc sản phẩm theo từ khóa tìm kiếm
         filtered_products = [p for p in products if keyword.lower() in p["name"].lower()]
@@ -123,9 +122,6 @@ class Test(QtWidgets.QMainWindow):
             self.listWidget.setItemWidget(item, item_widget)
 
     def create_product_item(self, product):
-        item_widget = QWidget()
-        layout = QVBoxLayout()
-
         item_widget = QWidget()
         layout = QVBoxLayout()
 
@@ -157,7 +153,6 @@ class Test(QtWidgets.QMainWindow):
         price_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         price_label.setStyleSheet("color: orange; font-weight: bold; font-size: 13px;")
         layout.addWidget(price_label)
-
         item_widget.setLayout(layout)
         return item_widget
     
@@ -187,10 +182,14 @@ class Test(QtWidgets.QMainWindow):
                 self.close()
     
     def shop_cart(self):
-        shopPage.show()
+        self.shopPage = ShopCart()
+        self.shopPage.show() 
+        self.close()       
+    
+    def setting_item(self):
+        self.settingitemPage = Setting_item()
+        self.settingitemPage.show() 
         self.close()
-
-        
 
 class Buy_item_page(QtWidgets.QMainWindow):
     def __init__(self, product_data):
@@ -213,6 +212,7 @@ class Buy_item_page(QtWidgets.QMainWindow):
             
             self.pushButton_add_item.clicked.connect(lambda: self.add_item(product_data))
             self.pushButton_back.clicked.connect(lambda: self.back_page())
+
     def add_item(self, item):
         quantity = self.spinBox_number.value()
         try:
@@ -221,8 +221,13 @@ class Buy_item_page(QtWidgets.QMainWindow):
         except (FileNotFoundError, json.JSONDecodeError):
             data = []
 
+        item_id = item.get("id")
+        if not item_id:
+            QMessageBox.warning(self, "Thiếu ID", "Sản phẩm này chưa có ID. Vui lòng cập nhật dữ liệu.")
+            return
+
         for existing_item in data:
-            if existing_item["id"] == item["id"]:
+            if existing_item.get("id") == item_id:
                 existing_item["number_of_item"] += quantity
                 break
         else:
@@ -232,6 +237,7 @@ class Buy_item_page(QtWidgets.QMainWindow):
 
         with open('data/shopping_cart.json', 'w', encoding='utf-8') as file:
             json.dump(data, file, ensure_ascii=False, indent=4)
+
     def back_page(self):
         self.testPage = Test(global_name)
         self.testPage.show()
@@ -241,9 +247,14 @@ class ShopCart(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi("app_conline/shopping_carter.ui", self)
+        self.spinBox_quantity.setMinimum(1)
+        self.spinBox_quantity.setMaximum(10)
         self.data_file = "data/shopping_cart.json"
         self.load_item_json()
         self.pushButton_back2.clicked.connect(self.back_page2)
+        self.pushButton_xoahang.clicked.connect(self.delete_selected)
+        self.listWidget.itemClicked.connect(self.on_item_clicked)
+        self.pushButton_them.clicked.connect(self.handle_add_item)
 
     def load_item_json(self):
         try:
@@ -252,20 +263,21 @@ class ShopCart(QtWidgets.QMainWindow):
         except (FileNotFoundError, json.JSONDecodeError):
             products = []
 
+
         self.listWidget.clear()
         for product in products:
             item_widget = self.create_product_item(product)
-            item = QListWidgetItem(self.listWidget)
+
+            item = QListWidgetItem()
+            item.setData(Qt.ItemDataRole.UserRole, product.get("id", None))
+            item_widget.adjustSize()
             item.setSizeHint(item_widget.sizeHint())
             self.listWidget.addItem(item)
             self.listWidget.setItemWidget(item, item_widget)
 
     def create_product_item(self, product):
         item_widget = QWidget()
-        layout = QVBoxLayout()
-
-        item_widget = QWidget()
-        layout = QVBoxLayout()
+        layout = QVBoxLayout(item_widget)
 
         img_label = QLabel()
         image_path = product.get("image", "default.png")
@@ -301,8 +313,6 @@ class ShopCart(QtWidgets.QMainWindow):
         number_item_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         number_item_label.setStyleSheet("font-size: 14px; font-weight: bold;")
         layout.addWidget(number_item_label)
-        
-
         item_widget.setLayout(layout)
         return item_widget
     
@@ -351,7 +361,6 @@ class ShopCart(QtWidgets.QMainWindow):
         QMessageBox.information(self, "Thành công", "Đã cập nhật giỏ hàng.")
         self.load_item_json()
 
-
     def handle_add_item(self):
         name = self.lineEdit_name.text().strip()
         quantity = self.spinBox_quantity.value()
@@ -383,23 +392,115 @@ class ShopCart(QtWidgets.QMainWindow):
             json.dump(data, f, ensure_ascii=False, indent=4)
 
         QMessageBox.information(self, "Thành công", "Đã cập nhật giỏ hàng.")
-        self.load_item_json()  # Refresh lại danh sách
+        self.load_item_json()
 
     def back_page2(self):
         self.testPage = Test(global_name)
-        testPage.show()
+        self.testPage.show()
         self.close()
+
+class Setting_item(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi("app_conline/setting_item.ui", self)
+
+    def add_item(self):
+        name = self.lineEdit_name.text().strip()
+        price_text = self.lineEdit_price.text().strip()
+        label = self.lineEdit_label.text().strip()
+        image = self.comboBox_image.currentText()
+    
+        if not name or not price_text:
+            QMessageBox.warning(self, "Thiếu thông tin", "Vui lòng nhập tên và giá.")
+            return
+    
+        try:
+            price = int(price_text)
+            if price < 0:
+                raise ValueError
+        except ValueError:
+            QMessageBox.warning(self, "Lỗi", "Giá phải là số nguyên dương.")
+            return
+    
+        # Đọc dữ liệu hiện có
+        try:
+            with open("data/item_shop.json", "r", encoding="utf-8") as f:
+                items = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            items = []
+    
+        # Kiểm tra trùng tên
+        for item in items:
+            if item["name"].lower() == name.lower():
+                QMessageBox.warning(self, "Trùng tên", "Tên sản phẩm đã tồn tại.")
+                return
+    
+        # Tạo ID mới: lớn nhất + 1
+        if items:
+            max_id = max(item.get("id", 0) for item in items)
+        else:
+            max_id = 0
+        new_id = max_id + 1
+    
+        # Thêm item mới
+        new_item = {
+            "id": new_id,
+            "name": name,
+            "price": price,
+            "label": label,
+            "image": image,
+            "number_of_item": 0
+        }
+    
+        items.append(new_item)
+    
+        with open("data/item_shop.json", "w", encoding="utf-8") as f:
+            json.dump(items, f, ensure_ascii=False, indent=4)
+    
+        QMessageBox.information(self, "Thành công", "Đã thêm sản phẩm mới.")
+        self.load_data()
+
+    def load_data(self):
+        self.listWidget.clear()
+    
+        try:
+            with open("data/item_shop.json", "r", encoding="utf-8") as f:
+                items = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            items = []
+    
+        for item in items:
+            name = item.get("name", "Không tên")
+            price = item.get("price", 0)
+            label = item.get("label", "Không nhãn")
+            quantity = item.get("number_of_item", 0)
+    
+            # Tạo widget hiển thị sản phẩm
+            widget = QWidget()
+            layout = QVBoxLayout()
+    
+            name_label = QLabel(f"<b>{name}</b>")
+            price_label = QLabel(f"Giá: ₫{price:,}")
+            label_label = QLabel(f"Nhãn: {label}")
+            quantity_label = QLabel(f"Số lượng: {quantity}")
+    
+            for lbl in [name_label, price_label, label_label, quantity_label]:
+                lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                layout.addWidget(lbl)
+    
+            widget.setLayout(layout)
+    
+            # Tạo QListWidgetItem và gắn widget
+            item_widget = QListWidgetItem()
+            item_widget.setSizeHint(widget.sizeHint())
+            item_widget.setData(Qt.ItemDataRole.UserRole, item["id"])  # Gắn ID vào item
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     registerPage = Register()
     loginPage = Login()
-    testPage = Test('no name')
-    buyPage = Buy_item_page(None)
-    shopPage = ShopCart()
     loginPage.show()
     
-    # Thiết lập hộp thoại thông báo lỗi
     msg_box = QMessageBox()
     msg_box.setWindowTitle("Lỗi")
     msg_box.setIcon(QMessageBox.Icon.Warning)
